@@ -11,7 +11,6 @@ const nextConfig = {
   compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
-  optimizeFonts: true,
   webpack: (config, { isServer }) => {
     if (isServer) {
       // Ensure externals array exists

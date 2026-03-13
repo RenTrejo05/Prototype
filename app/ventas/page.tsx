@@ -156,7 +156,7 @@ export default function VentasPage() {
                       <TableColumn>Cantidad</TableColumn>
                       <TableColumn>P. unit.</TableColumn>
                       <TableColumn>Subtotal</TableColumn>
-                      <TableColumn width={80} />
+                      <TableColumn width={80}>Accion</TableColumn>
                     </TableHeader>
                     <TableBody>
                       {cart.map((item, i) => (
