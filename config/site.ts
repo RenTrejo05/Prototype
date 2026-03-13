@@ -1,7 +1,7 @@
 export type SiteConfig = typeof siteConfig;
 
 export const siteConfig = {
-  name: "Inventario",
+  name: "SIPS",
   description: "Sistema de inventario: productos, ventas, stock y alertas.",
   navItems: [
     { label: "Home", href: "/" },

@@ -25,15 +25,12 @@ const nextConfig = {
   async headers() {
     return [
       {
-        source: '/:path*',
+        // Static assets have content hashes in filenames — safe to cache forever
+        source: '/_next/static/:path*',
         headers: [
           {
-            key: 'X-Robots-Tag',
-            value: 'index, follow',
-          },
-          {
             key: 'Cache-Control',
-            value: 'public, max-age=3600, stale-while-revalidate=86400',
+            value: 'public, max-age=31536000, immutable',
           },
         ],
       },

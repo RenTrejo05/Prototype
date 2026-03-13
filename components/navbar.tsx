@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   Navbar as HeroUINavbar,
   NavbarContent,
@@ -11,14 +12,23 @@ import {
 } from "@heroui/navbar";
 import { Button } from "@heroui/button";
 import NextLink from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
+
+import { useTheme } from "next-themes";
 
 import { ThemeSwitch } from "@/components/theme-switch";
 import { useAuth } from "@/contexts/AuthContext";
 
 export const Navbar = () => {
   const { user, logout, isAuthenticated } = useAuth();
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const handleLogout = () => {
     logout();
@@ -29,8 +39,18 @@ export const Navbar = () => {
     <HeroUINavbar maxWidth="xl" position="sticky">
       <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
         <NavbarBrand as="li" className="gap-3 max-w-fit">
-          <NextLink className="flex justify-start items-center gap-1" href="/">
-            <p className="font-bold text-inherit">Inventario</p>
+          <NextLink className="flex justify-start items-center gap-2" href="/">
+            {isMounted ? (
+              <Image
+                alt="SIPS logo"
+                height={50}
+                src={resolvedTheme === "dark" ? "/sips-logo-dark.svg" : "/sips-logo.svg"}
+                width={50}
+              />
+            ) : (
+              <div style={{ width: 50, height: 50 }} />
+            )}
+            <p className="font-bold text-inherit">SIPS</p>
           </NextLink>
         </NavbarBrand>
       </NavbarContent>
@@ -39,7 +59,7 @@ export const Navbar = () => {
         className="hidden sm:flex basis-1/5 sm:basis-full"
         justify="end"
       >
-        {isAuthenticated ? (
+        {isMounted && isAuthenticated ? (
           <>
             <NavbarItem className="hidden sm:flex gap-2">
               <ThemeSwitch />
@@ -63,7 +83,7 @@ export const Navbar = () => {
         ) : (
           <>
             <NavbarItem className="hidden sm:flex gap-2">
-              <ThemeSwitch />
+              {isMounted ? <ThemeSwitch /> : null}
             </NavbarItem>
             <NavbarItem>
               <Button
@@ -80,11 +100,11 @@ export const Navbar = () => {
       </NavbarContent>
 
       <NavbarContent className="sm:hidden basis-1 pl-4" justify="end">
-        <ThemeSwitch />
-        {isAuthenticated && <NavbarMenuToggle />}
+        {isMounted ? <ThemeSwitch /> : null}
+        {isMounted && isAuthenticated && <NavbarMenuToggle />}
       </NavbarContent>
 
-      {isAuthenticated && (
+      {isMounted && isAuthenticated && (
         <NavbarMenu>
           <div className="mx-4 mt-2 flex flex-col gap-2">
             <NavbarMenuItem>

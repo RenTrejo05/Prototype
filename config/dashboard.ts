@@ -14,7 +14,6 @@ export const dashboardIcons = {
 } as const;
 
 export const dashboardModules: DashboardModule[] = [
-  { label: "Inicio", href: "/", icon: "home" },
   { label: "Productos", href: "/productos", icon: "productos" },
   { label: "Ventas", href: "/ventas", icon: "ventas" },
   { label: "Inventario y alertas", href: "/inventario", icon: "inventario" },
