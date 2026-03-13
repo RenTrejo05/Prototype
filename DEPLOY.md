@@ -38,6 +38,8 @@ Guía paso a paso para subir los 3 servicios **gratis** y con poco esfuerzo.
 
 ## 2. Inventory API en Render
 
+> Recomendado: usa el archivo `render.yaml` de la raíz del repo (Blueprint) para que Render tome automáticamente `rootDir`, `buildCommand` y `startCommand` correctos en monorepo.
+
 1. [Render Dashboard](https://dashboard.render.com/) → **New** → **Web Service**.
 2. Conecta tu **repositorio de GitHub** y selecciona el repo del proyecto.
 3. Configuración:

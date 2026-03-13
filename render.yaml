@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: inventory-api
+    runtime: node
+    rootDir: services/inventory-api
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+
+  - type: web
+    name: alerts-service
+    runtime: node
+    rootDir: services/alerts-service
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
