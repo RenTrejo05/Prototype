@@ -10,38 +10,30 @@ import { useAuth } from "@/contexts/AuthContext";
 import { dashboardModules } from "@/config/dashboard";
 import { ModuleIcon, LockIcon } from "@/components/module-icons";
 import { title } from "@/components/primitives";
+import { getInventoryApiUrl, getAlertsApiUrl } from "@/lib/api-clients";
+import type { InventoryAnalytics, StoredAlert } from "@/types";
 
 export default function Home() {
   const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalTasks: 0,
-    completedTasks: 0,
-    unreadNotifications: 0,
-    overdueTasks: 0,
-  });
+  const [analytics, setAnalytics] = useState<InventoryAnalytics | null>(null);
+  const [alertsCount, setAlertsCount] = useState(0);
 
   useEffect(() => {
     const load = async () => {
       if (!user) return;
       try {
-        const [tasksRes, notificationsRes] = await Promise.all([
-          fetch("/api/tasks"),
-          fetch(`/api/notifications?userId=${user.id}&unread=1`),
+        const [analyticsRes, alertsRes] = await Promise.all([
+          fetch(getInventoryApiUrl("/api/inventory/analytics")),
+          fetch(getAlertsApiUrl("/api/alerts?limit=100")),
         ]);
-        if (!tasksRes.ok || !notificationsRes.ok) return;
-        const tasks = await tasksRes.json();
-        const notifications = await notificationsRes.json();
-        const now = new Date();
-        const overdue = tasks.filter(
-          (t: { dueDate?: string; status: string }) =>
-            t.dueDate && t.status !== "Completada" && new Date(t.dueDate) < now,
-        ).length;
-        setStats({
-          totalTasks: tasks.length,
-          completedTasks: tasks.filter((t: { status: string }) => t.status === "Completada").length,
-          unreadNotifications: notifications.length,
-          overdueTasks: overdue,
-        });
+        if (analyticsRes.ok) {
+          const data: InventoryAnalytics = await analyticsRes.json();
+          setAnalytics(data);
+        }
+        if (alertsRes.ok) {
+          const alerts: StoredAlert[] = await alertsRes.json();
+          setAlertsCount(alerts.length);
+        }
       } catch {
         // ignore
       }
@@ -63,22 +55,10 @@ export default function Home() {
               Hola, <strong>{user?.username}</strong>
             </p>
           </div>
-          {(stats.unreadNotifications > 0 || stats.overdueTasks > 0) && (
-            <div className="flex gap-2">
-              {stats.unreadNotifications > 0 && (
-                <Chip color="primary" size="sm" variant="flat">
-                  {stats.unreadNotifications} notificación
-                  {stats.unreadNotifications !== 1 ? "es" : ""}
-                </Chip>
-              )}
-              {stats.overdueTasks > 0 && (
-                <Chip color="danger" size="sm" variant="flat">
-                  {stats.overdueTasks} tarea
-                  {stats.overdueTasks !== 1 ? "s" : ""} vencida
-                  {stats.overdueTasks !== 1 ? "s" : ""}
-                </Chip>
-              )}
-            </div>
+          {alertsCount > 0 && (
+            <Chip color="warning" size="sm" variant="flat">
+              {alertsCount} alerta{alertsCount !== 1 ? "s" : ""}
+            </Chip>
           )}
         </div>
 
@@ -111,40 +91,44 @@ export default function Home() {
 
         <div className="bg-default-50/50 dark:bg-default-100/30 rounded-lg">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Link href="/tareas">
+            <Link href="/productos">
               <Card className="bg-default-100/80 h-full">
                 <CardBody className="py-6 flex flex-col justify-center">
-                  <p className="text-sm text-default-600">Total tareas</p>
-                  <p className="text-2xl font-semibold">{stats.totalTasks}</p>
-                </CardBody>
-              </Card>
-            </Link>
-            <Link href="/tareas">
-              <Card className="bg-default-100/80 h-full">
-                <CardBody className="py-6 flex flex-col justify-center">
-                  <p className="text-sm text-default-600">Completadas</p>
-                  <p className="text-2xl font-semibold text-success">
-                    {stats.completedTasks}
-                  </p>
-                </CardBody>
-              </Card>
-            </Link>
-            <Link href="/notificaciones">
-              <Card className="bg-default-100/80 h-full">
-                <CardBody className="py-6 flex flex-col justify-center">
-                  <p className="text-sm text-default-600">Notificaciones</p>
+                  <p className="text-sm text-default-600">Productos</p>
                   <p className="text-2xl font-semibold">
-                    {stats.unreadNotifications}
+                    {analytics?.totalProducts ?? "—"}
                   </p>
                 </CardBody>
               </Card>
             </Link>
-            <Link href="/tareas">
+            <Link href="/inventario">
               <Card className="bg-default-100/80 h-full">
                 <CardBody className="py-6 flex flex-col justify-center">
-                  <p className="text-sm text-default-600">Vencidas</p>
-                  <p className="text-2xl font-semibold text-danger">
-                    {stats.overdueTasks}
+                  <p className="text-sm text-default-600">Unidades en stock</p>
+                  <p className="text-2xl font-semibold">
+                    {analytics?.totalStockUnits ?? "—"}
+                  </p>
+                </CardBody>
+              </Card>
+            </Link>
+            <Link href="/inventario">
+              <Card className="bg-default-100/80 h-full">
+                <CardBody className="py-6 flex flex-col justify-center">
+                  <p className="text-sm text-default-600">Valor inventario</p>
+                  <p className="text-2xl font-semibold text-success">
+                    {analytics != null
+                      ? `$${analytics.totalStockValue.toLocaleString()}`
+                      : "—"}
+                  </p>
+                </CardBody>
+              </Card>
+            </Link>
+            <Link href="/inventario">
+              <Card className="bg-default-100/80 h-full">
+                <CardBody className="py-6 flex flex-col justify-center">
+                  <p className="text-sm text-default-600">Alertas</p>
+                  <p className="text-2xl font-semibold text-warning">
+                    {analytics?.lowStockProducts?.length ?? 0}
                   </p>
                 </CardBody>
               </Card>

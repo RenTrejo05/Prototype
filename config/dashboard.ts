@@ -5,26 +5,18 @@ export type DashboardModule = {
   role?: "admin";
 };
 
-// Claves de iconos usadas en el dashboard
 export const dashboardIcons = {
-  tareas: "tareas",
-  proyectos: "proyectos",
-  comentarios: "comentarios",
-  historial: "historial",
-  notificaciones: "notificaciones",
-  busqueda: "busqueda",
-  reportes: "reportes",
-  usuarios: "usuarios",
   home: "home",
+  productos: "productos",
+  ventas: "ventas",
+  inventario: "inventario",
+  usuarios: "usuarios",
 } as const;
 
 export const dashboardModules: DashboardModule[] = [
-  { label: "Tareas", href: "/tareas", icon: "tareas" },
-  { label: "Proyectos", href: "/proyectos", icon: "proyectos" },
-  { label: "Comentarios", href: "/comentarios", icon: "comentarios" },
-  { label: "Historial", href: "/historial", icon: "historial" },
-  { label: "Notificaciones", href: "/notificaciones", icon: "notificaciones" },
-  { label: "Búsqueda", href: "/busqueda", icon: "busqueda" },
-  { label: "Reportes", href: "/reportes", icon: "reportes" },
+  { label: "Inicio", href: "/", icon: "home" },
+  { label: "Productos", href: "/productos", icon: "productos" },
+  { label: "Ventas", href: "/ventas", icon: "ventas" },
+  { label: "Inventario y alertas", href: "/inventario", icon: "inventario" },
   { label: "Usuarios", href: "/usuarios", icon: "usuarios", role: "admin" },
 ];
