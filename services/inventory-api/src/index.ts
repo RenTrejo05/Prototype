@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Request, type Response } from "express";
 import cors from "cors";
 import { getProducts, getProductById, createProduct, updateProduct, deleteProduct } from "./routes/products.js";
 import { getSales, createSale } from "./routes/sales.js";
@@ -10,7 +10,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT ?? 4000;
 
-app.get("/api/health", (_req, res) => {
+app.get("/api/health", (_req: Request, res: Response) => {
   res.json({ service: "inventory-api", status: "ok" });
 });
 

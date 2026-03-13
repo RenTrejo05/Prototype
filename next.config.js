@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: {
+    root: __dirname,
+  },
   eslint: {
     // Warnings are allowed in build, only errors will fail
     ignoreDuringBuilds: false,

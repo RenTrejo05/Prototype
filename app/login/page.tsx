@@ -37,7 +37,7 @@ export default function LoginPage() {
     <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
       <Card className="w-full max-w-lg">
         <CardHeader className="flex flex-col gap-1 items-center pt-6">
-          <h1 className={title({ size: "lg" })}>Task Manager</h1>
+          <h1 className={title({ size: "lg" })}>Inventario</h1>
           <p className="text-small text-default-500 pt-2">
             Inicia sesión para continuar
           </p>
