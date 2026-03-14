@@ -131,15 +131,19 @@ export default function UsuariosPage() {
             />
             <Select
               label="Rol"
-              selectedKeys={[role]}
+              placeholder="Seleccionar"
+              selectedKeys={role ? new Set([role]) : new Set()}
               variant="bordered"
               onSelectionChange={(keys) => {
                 const v = Array.from(keys)[0] as UserRole;
                 if (v) setRole(v);
               }}
+              items={[
+                { key: "user", label: "Usuario" },
+                { key: "admin", label: "Administrador" },
+              ]}
             >
-              <SelectItem key="user">Usuario</SelectItem>
-              <SelectItem key="admin">Administrador</SelectItem>
+              {(item) => <SelectItem key={item.key}>{item.label}</SelectItem>}
             </Select>
             {message && (
               <p

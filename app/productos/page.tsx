@@ -19,6 +19,7 @@ import { Chip } from "@heroui/chip";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { title } from "@/components/primitives";
 import { getInventoryApiUrl } from "@/lib/api-clients";
+import { ConfirmModal } from "@/components/confirm-modal";
 
 const emptyProduct = (): Partial<Product> => ({
   name: "",
@@ -36,6 +37,31 @@ export default function ProductosPage() {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [form, setForm] = useState<Partial<Product>>(emptyProduct());
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  type ModalState = {
+    open: boolean;
+    title: string;
+    message: string;
+    alertOnly: boolean;
+    confirmColor: "danger" | "warning" | "primary";
+    onConfirm: () => void;
+  };
+  const closedModal: ModalState = {
+    open: false, title: "", message: "", alertOnly: true,
+    confirmColor: "primary", onConfirm: () => {},
+  };
+  const [modal, setModal] = useState<ModalState>(closedModal);
+
+  const showAlert = (message: string, title = "Aviso") =>
+    setModal({ open: true, title, message, alertOnly: true, confirmColor: "primary", onConfirm: () => {} });
+
+  const showConfirm = (
+    message: string,
+    onConfirm: () => void,
+    title = "Confirmar",
+    confirmColor: "danger" | "warning" | "primary" = "danger",
+  ) => setModal({ open: true, title, message, alertOnly: false, confirmColor, onConfirm });
 
   const load = async () => {
     try {
@@ -71,7 +97,7 @@ export default function ProductosPage() {
 
   const save = async () => {
     if (!form.name?.trim() || form.sku == null) {
-      alert("Nombre y SKU son requeridos");
+      showAlert("Nombre y SKU son requeridos", "Campos requeridos");
       return;
     }
     try {
@@ -86,34 +112,51 @@ export default function ProductosPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error ?? "Error al guardar");
+        showAlert(err.error ?? "Error al guardar", "Error");
         return;
       }
       await load();
       clearForm();
     } catch (e) {
       console.error(e);
-      alert("Error de conexión");
+      showAlert("Error de conexión", "Error");
     }
   };
 
-  const remove = async () => {
-    if (!selectedId || !confirm("¿Eliminar este producto?")) return;
+  const doRemove = async () => {
     try {
       const res = await fetch(getInventoryApiUrl(`/api/products/${selectedId}`), {
         method: "DELETE",
       });
       if (!res.ok) {
-        alert("No se pudo eliminar");
+        showAlert("No se pudo eliminar", "Error");
         return;
       }
       await load();
       clearForm();
     } catch (e) {
       console.error(e);
-      alert("Error de conexión");
+      showAlert("Error de conexión", "Error");
     }
   };
+
+  const remove = () => {
+    if (!selectedId) return;
+    showConfirm("¿Estás seguro de que deseas eliminar este producto?", doRemove, "Eliminar producto", "danger");
+  };
+
+  const filteredProducts = products.filter(
+    (p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      p.sku.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      load();
+    }
+  }, [searchTerm]);
+
 
   return (
     <ProtectedRoute>
@@ -206,7 +249,12 @@ export default function ProductosPage() {
             <h2 className="text-lg font-semibold">Lista de productos</h2>
           </CardHeader>
           <CardBody>
-            <Table aria-label="Productos">
+            <Table aria-label="Productos" topContent={
+              <Input
+                placeholder="Buscar por nombre o SKU"
+                onValueChange={(v) => setSearchTerm(v)}
+              />
+            }>
               <TableHeader>
                 <TableColumn>ID</TableColumn>
                 <TableColumn>Nombre</TableColumn>
@@ -220,7 +268,7 @@ export default function ProductosPage() {
                 emptyContent={loading ? "Cargando…" : "No hay productos"}
                 isLoading={loading}
               >
-                {products.map((p) => (
+                {filteredProducts.map((p) => (
                   <TableRow
                     key={p.id}
                     className="cursor-pointer"
@@ -250,6 +298,15 @@ export default function ProductosPage() {
           </CardBody>
         </Card>
       </div>
-    </ProtectedRoute>
+        <ConfirmModal
+          isOpen={modal.open}
+          title={modal.title}
+          message={modal.message}
+          alertOnly={modal.alertOnly}
+          confirmColor={modal.confirmColor}
+          onConfirm={modal.onConfirm}
+          onClose={() => setModal(closedModal)}
+        />
+      </ProtectedRoute>
   );
 }

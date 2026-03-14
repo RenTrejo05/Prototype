@@ -7,6 +7,8 @@ import {
   ShoppingCart,
   BarChart3,
   Users,
+  Truck,
+  Scale,
   type LucideIcon,
 } from "lucide-react";
 
@@ -15,6 +17,8 @@ const iconMap: Record<DashboardModule["icon"], LucideIcon> = {
   productos: Package,
   ventas: ShoppingCart,
   inventario: BarChart3,
+  recepcion: Truck,
+  ajustes: Scale,
   usuarios: Users,
 };
 

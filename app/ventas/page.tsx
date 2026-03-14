@@ -18,6 +18,7 @@ import {
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { title } from "@/components/primitives";
 import { getInventoryApiUrl } from "@/lib/api-clients";
+import { ConfirmModal } from "@/components/confirm-modal";
 
 interface CartItem extends SaleItem {
   productName?: string;
@@ -31,6 +32,10 @@ export default function VentasPage() {
   const [qty, setQty] = useState(1);
   const [note, setNote] = useState("");
   const [loading, setLoading] = useState(true);
+  const [alertModal, setAlertModal] = useState({ open: false, title: "", message: "" });
+
+  const showAlert = (message: string, title = "Aviso") =>
+    setAlertModal({ open: true, title, message });
 
   const load = async () => {
     try {
@@ -55,7 +60,7 @@ export default function VentasPage() {
     const product = products.find((p) => p.id === id);
     if (!product) return;
     if (product.stock < qty) {
-      alert(`Stock insuficiente: ${product.stock} disponibles`);
+      showAlert(`Stock insuficiente: ${product.stock} disponibles`, "Stock insuficiente");
       return;
     }
     setCart((prev) => [
@@ -79,7 +84,7 @@ export default function VentasPage() {
 
   const registerSale = async () => {
     if (cart.length === 0) {
-      alert("Agrega al menos un producto");
+      showAlert("Agrega al menos un producto", "Carrito vacío");
       return;
     }
     const items: SaleItem[] = cart.map(({ productId, quantity, unitPrice }) => ({
@@ -95,7 +100,7 @@ export default function VentasPage() {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error ?? "Error al registrar venta");
+        showAlert(err.error ?? "Error al registrar venta", "Error");
         return;
       }
       setCart([]);
@@ -103,7 +108,7 @@ export default function VentasPage() {
       await load();
     } catch (e) {
       console.error(e);
-      alert("Error de conexión");
+      showAlert("Error de conexión", "Error");
     }
   };
 
@@ -121,16 +126,24 @@ export default function VentasPage() {
               <Select
                 label="Producto"
                 placeholder="Seleccionar"
-                selectedKeys={selectedProductId ? [selectedProductId] : []}
-                onSelectionChange={(k) =>
-                  setSelectedProductId(Array.from(k)[0] as string ?? "")
-                }
+                selectedKeys={selectedProductId ? new Set([selectedProductId]) : new Set()}
+                onSelectionChange={(keys) => {
+                  if (keys === "all") {
+                    setSelectedProductId("");
+                    return;
+                  }
+                  const firstKey = keys.values().next().value;
+                  setSelectedProductId(firstKey != null ? String(firstKey) : "");
+                }}
                 className="max-w-xs"
                 variant="bordered"
               >
                 {products.filter((p) => p.active).map((p) => (
-                  <SelectItem key={String(p.id)}>
-                    {p.name} (stock: {p.stock}) - ${p.price}
+                  <SelectItem
+                    key={String(p.id)}
+                    textValue={p.name}
+                  >
+                    {`${p.name} (stock: ${p.stock}) - $${p.price}`}
                   </SelectItem>
                 ))}
               </Select>
@@ -233,6 +246,14 @@ export default function VentasPage() {
           </CardBody>
         </Card>
       </div>
+      <ConfirmModal
+        isOpen={alertModal.open}
+        title={alertModal.title}
+        message={alertModal.message}
+        alertOnly
+        onConfirm={() => {}}
+        onClose={() => setAlertModal({ open: false, title: "", message: "" })}
+      />
     </ProtectedRoute>
   );
 }

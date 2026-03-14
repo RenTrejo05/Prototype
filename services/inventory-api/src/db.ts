@@ -1,4 +1,4 @@
-import type { Product, Sale } from "./types.js";
+import type { Product, Sale, GoodsReceipt, InventoryAdjustment } from "./types.js";
 import { MongoClient, type Collection } from "mongodb";
 
 const globalForMongo = globalThis as unknown as { _mongoClient?: MongoClient };
@@ -31,4 +31,14 @@ export async function productsCollection(): Promise<Collection<Product>> {
 export async function salesCollection(): Promise<Collection<Sale>> {
   const db = await getDb();
   return db.collection<Sale>("sales");
+}
+
+export async function receiptsCollection(): Promise<Collection<GoodsReceipt>> {
+  const db = await getDb();
+  return db.collection<GoodsReceipt>("receipts");
+}
+
+export async function adjustmentsCollection(): Promise<Collection<InventoryAdjustment>> {
+  const db = await getDb();
+  return db.collection<InventoryAdjustment>("adjustments");
 }
