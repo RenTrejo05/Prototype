@@ -6,6 +6,7 @@ import { Card, CardBody, CardHeader } from "@heroui/card";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { Switch } from "@heroui/switch";
+import { Select, SelectItem } from "@heroui/select";
 import {
   Table,
   TableHeader,
@@ -21,6 +22,11 @@ import { title } from "@/components/primitives";
 import { getInventoryApiUrl } from "@/lib/api-clients";
 import { ConfirmModal } from "@/components/confirm-modal";
 
+type SatCategory = {
+  key: string;
+  label: string;
+};
+
 const emptyProduct = (): Partial<Product> => ({
   name: "",
   sku: "",
@@ -34,6 +40,8 @@ const emptyProduct = (): Partial<Product> => ({
 
 export default function ProductosPage() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<SatCategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [form, setForm] = useState<Partial<Product>>(emptyProduct());
   const [loading, setLoading] = useState(true);
@@ -72,8 +80,22 @@ export default function ProductosPage() {
     }
   };
 
+  const loadCategories = async () => {
+    try {
+      const res = await fetch("/api/products/categories", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = (await res.json()) as { categories?: SatCategory[] };
+      setCategories(Array.isArray(data.categories) ? data.categories : []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  };
+
   useEffect(() => {
     load();
+    loadCategories();
   }, []);
 
   const select = (p: Product) => {
@@ -185,12 +207,25 @@ export default function ProductosPage() {
                 variant="bordered"
                 isRequired
               />
-              <Input
+              <Select
                 label="Categoría"
-                value={form.category ?? ""}
-                onValueChange={(v) => setForm({ ...form, category: v })}
+                placeholder="Seleccionar categoría SAT"
+                selectedKeys={form.category ? new Set([form.category]) : new Set()}
+                isLoading={categoriesLoading}
                 variant="bordered"
-              />
+                items={categories}
+                onSelectionChange={(keys) => {
+                  if (keys === "all") return;
+                  const selected = Array.from(keys)[0];
+                  setForm({ ...form, category: selected ? String(selected) : "" });
+                }}
+              >
+                {(item) => (
+                  <SelectItem key={item.key} textValue={`${item.key} - ${item.label}`}>
+                    {item.key} - {item.label}
+                  </SelectItem>
+                )}
+              </Select>
               <Input
                 type="number"
                 label="Precio venta"
